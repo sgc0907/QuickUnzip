@@ -76,6 +76,14 @@ Add-Type -Namespace Win32 -Name Shell -MemberDefinition '[DllImport("shell32.dll
 [Win32.Shell]::SHChangeNotify(0x08000000, 0, [IntPtr]::Zero, [IntPtr]::Zero)
 
 Write-Host "설치 완료: $exe"
-Write-Host "열리는 설정 창에서 형식별로 QuickUnzip을 기본 앱으로 지정하세요."
-# Windows는 프로그램이 기본 앱을 직접 바꾸지 못하게 막으므로, QuickUnzip 기본 앱 설정 화면을 바로 엽니다
-Start-Process 'ms-settings:defaultapps?registeredAppUser=QuickUnzip'
+# 기본 앱 지정 여부 묻기
+# Windows는 프로그램이 기본 앱을 직접 바꾸지 못하게 막으므로, 설정 화면을 열어 사용자가 한 번 누르게 합니다
+Add-Type -AssemblyName System.Windows.Forms
+$ans = [Windows.Forms.MessageBox]::Show(
+    "QuickUnzip을 압축 파일의 기본 앱으로 지정할까요?`n`n'예'를 누르면 설정 화면이 열립니다.`n맨 위의 [기본값으로 설정] 버튼을 한 번 누르면 모든 형식이 지정됩니다.`n(버튼이 없으면 형식별로 QuickUnzip을 선택하세요.)",
+    'QuickUnzip 설치', 'YesNo', 'Question')
+if ($ans -eq 'Yes') {
+    Start-Process 'ms-settings:defaultapps?registeredAppUser=QuickUnzip'
+} else {
+    Write-Host "나중에 설정 > 앱 > 기본 앱 > QuickUnzip 에서 지정할 수 있습니다."
+}
