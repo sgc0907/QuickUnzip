@@ -32,6 +32,8 @@ $cap = 'HKCU:\Software\QuickUnzip\Capabilities'
 New-Item -Force "$cap\FileAssociations" | Out-Null
 Set-ItemProperty $cap 'ApplicationName' 'QuickUnzip'
 Set-ItemProperty $cap 'ApplicationDescription' '더블클릭하면 압축 파일을 바로 풉니다'
+Set-ItemProperty $cap 'ApplicationIcon' "$exe,0"
+Set-Default 'HKCU:\Software\Microsoft\Windows\CurrentVersion\App Paths\QuickUnzip.exe' $exe
 New-Item -Force 'HKCU:\Software\RegisteredApplications' | Out-Null
 Set-ItemProperty 'HKCU:\Software\RegisteredApplications' 'QuickUnzip' 'Software\QuickUnzip\Capabilities'
 
@@ -71,6 +73,27 @@ foreach ($ext in $types.Keys) {
     }
 }
 
+# 설정 > 기본 앱 목록은 HKLM\SOFTWARE\RegisteredApplications 에 등록된 앱만 보여줌 (HKCU 등록은 무시됨)
+# → 이 부분만 관리자 권한으로 한 번 등록
+$assoc = ($types.Keys | ForEach-Object { "Set-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\QuickUnzip\Capabilities\FileAssociations' -Name '$_' -Value 'QuickUnzip$_'" }) -join '; '
+$elev = @"
+New-Item -Force 'HKLM:\SOFTWARE\QuickUnzip\Capabilities\FileAssociations' | Out-Null
+Set-ItemProperty 'HKLM:\SOFTWARE\QuickUnzip\Capabilities' 'ApplicationName' 'QuickUnzip'
+Set-ItemProperty 'HKLM:\SOFTWARE\QuickUnzip\Capabilities' 'ApplicationDescription' 'Extract archives on double-click'
+Set-ItemProperty 'HKLM:\SOFTWARE\QuickUnzip\Capabilities' 'ApplicationIcon' '$exe,0'
+$assoc
+Set-ItemProperty 'HKLM:\SOFTWARE\RegisteredApplications' 'QuickUnzip' 'SOFTWARE\QuickUnzip\Capabilities'
+"@
+$enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($elev))
+try {
+    $p = Start-Process powershell.exe -Verb RunAs -Wait -PassThru -WindowStyle Hidden -ArgumentList "-NoProfile -EncodedCommand $enc"
+    if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode)" }
+    # 사용자 단위 중복 등록 제거
+    Remove-ItemProperty -ErrorAction SilentlyContinue 'HKCU:\Software\RegisteredApplications' -Name 'QuickUnzip'
+} catch {
+    Write-Warning "관리자 권한 등록을 건너뛰었습니다. 설정 > 기본 앱 목록에는 안 보이지만, 우클릭 > 연결 프로그램 에서는 선택할 수 있습니다."
+}
+
 # 탐색기 아이콘 새로고침
 Add-Type -Namespace Win32 -Name Shell -MemberDefinition '[DllImport("shell32.dll")] public static extern void SHChangeNotify(int e, int f, IntPtr a, IntPtr b);'
 [Win32.Shell]::SHChangeNotify(0x08000000, 0, [IntPtr]::Zero, [IntPtr]::Zero)
@@ -83,6 +106,9 @@ $ans = [Windows.Forms.MessageBox]::Show(
     "QuickUnzip을 압축 파일의 기본 앱으로 지정할까요?`n`n'예'를 누르면 설정 화면이 열립니다.`n맨 위의 [기본값으로 설정] 버튼을 한 번 누르면 모든 형식이 지정됩니다.`n(버튼이 없으면 형식별로 QuickUnzip을 선택하세요.)",
     'QuickUnzip 설치', 'YesNo', 'Question')
 if ($ans -eq 'Yes') {
+    # 이미 열린 설정 앱은 앱 목록을 캐시하므로 닫고 새로 엽니다
+    Get-Process SystemSettings -ErrorAction SilentlyContinue | Stop-Process -Force
+    Start-Sleep -Milliseconds 500
     Start-Process 'ms-settings:defaultapps?registeredAppUser=QuickUnzip'
 } else {
     Write-Host "나중에 설정 > 앱 > 기본 앱 > QuickUnzip 에서 지정할 수 있습니다."
