@@ -76,4 +76,6 @@ Add-Type -Namespace Win32 -Name Shell -MemberDefinition '[DllImport("shell32.dll
 [Win32.Shell]::SHChangeNotify(0x08000000, 0, [IntPtr]::Zero, [IntPtr]::Zero)
 
 Write-Host "설치 완료: $exe"
-Write-Host "설정 > 앱 > 기본 앱 > QuickUnzip 에서 형식별로 기본 앱을 지정하세요."
+Write-Host "열리는 설정 창에서 형식별로 QuickUnzip을 기본 앱으로 지정하세요."
+# Windows는 프로그램이 기본 앱을 직접 바꾸지 못하게 막으므로, QuickUnzip 기본 앱 설정 화면을 바로 엽니다
+Start-Process 'ms-settings:defaultapps?registeredAppUser=QuickUnzip'
