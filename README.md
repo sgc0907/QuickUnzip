@@ -20,9 +20,15 @@ zip은 .NET으로, 나머지는 Windows 10/11에 내장된 `tar.exe`(libarchive)
 
 ## 설치
 
+시작 메뉴에서 연 **일반 PowerShell**에서 실행하세요.
+
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1
+cd $env:USERPROFILE; git clone https://github.com/sgc0907/QuickUnzip
+powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\QuickUnzip\install.ps1"
 ```
+
+> ⚠️ 스토어/패키지 앱(예: Claude 데스크톱 앱) 안의 터미널에서 실행하면 AppData·레지스트리 쓰기가 그 앱 전용 공간으로 리디렉션되어,
+> 탐색기에서 더블클릭해도 "이 파일을 열 앱 선택" 창만 뜨고 풀리지 않습니다.
 
 설치 위치: `%LOCALAPPDATA%\QuickUnzip\QuickUnzip.exe`
 설정 → 기본 앱 목록에 등록하는 부분만 관리자 권한을 요청합니다 (Windows는 HKLM에 등록된 앱만 이 목록에 보여줍니다).
