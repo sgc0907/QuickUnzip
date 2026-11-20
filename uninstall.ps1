@@ -11,7 +11,8 @@ Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$C\Applications\Quick
 Remove-ItemProperty -ErrorAction SilentlyContinue 'HKCU:\Software\RegisteredApplications' -Name 'QuickUnzip'
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $env:LOCALAPPDATA 'QuickUnzip')
 if (Test-Path 'HKLM:\SOFTWARE\QuickUnzip') {
-    $cmd = "Remove-Item -Recurse -Force 'HKLM:\SOFTWARE\QuickUnzip'; Remove-ItemProperty 'HKLM:\SOFTWARE\RegisteredApplications' -Name 'QuickUnzip' -ErrorAction SilentlyContinue"
+    $cmd = "Remove-Item -Recurse -Force 'HKLM:\SOFTWARE\QuickUnzip'; Remove-ItemProperty 'HKLM:\SOFTWARE\RegisteredApplications' -Name 'QuickUnzip' -ErrorAction SilentlyContinue; " +
+           "Get-ChildItem 'HKLM:\SOFTWARE\Classes' -Name | Where-Object { `$_ -like 'QuickUnzip.*' } | ForEach-Object { Remove-Item -Recurse -Force (Join-Path 'HKLM:\SOFTWARE\Classes' `$_) }"
     try { Start-Process powershell.exe -Verb RunAs -Wait -WindowStyle Hidden -ArgumentList "-NoProfile -Command $cmd" } catch {}
 }
 Write-Host '제거 완료'

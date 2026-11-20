@@ -24,14 +24,15 @@ zip은 .NET으로, 나머지는 Windows 10/11에 내장된 `tar.exe`(libarchive)
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-현재 사용자에게만 설치되며 관리자 권한이 필요 없습니다. 설치 위치: `%LOCALAPPDATA%\QuickUnzip\QuickUnzip.exe`
+설치 위치: `%LOCALAPPDATA%\QuickUnzip\QuickUnzip.exe`
+설정 → 기본 앱 목록에 등록하는 부분만 관리자 권한을 요청합니다 (Windows는 HKLM에 등록된 앱만 이 목록에 보여줍니다).
 
-설치 중에 기본 앱으로 지정할지 묻습니다. **예**를 누르면 QuickUnzip 기본 앱 설정 화면이 열리고, 맨 위 **[기본값으로 설정]** 버튼을 한 번 누르면 모든 형식이 지정됩니다.
-(Windows는 프로그램이 기본 앱을 직접 바꾸지 못하게 막아 두어서 이 클릭 한 번은 직접 해야 합니다.)
+설치 중에 기본 앱으로 지정할지 묻습니다. **예**를 누르면 QuickUnzip 기본 앱 설정 화면이 열리고, 형식별로 눌러 QuickUnzip을 선택하면 됩니다.
+(Windows는 프로그램이 기본 앱을 직접 바꾸지 못하게 막아 두어서 이 선택은 직접 해야 합니다.)
 
 나중에 바꾸려면:
 
-- **한 번에:** 설정 → 앱 → 기본 앱 → `QuickUnzip` → [기본값으로 설정]
+- **앱별로:** 설정 → 앱 → 기본 앱 → `QuickUnzip` → 형식별로 선택
 - **형식별로:** 압축 파일 우클릭 → 연결 프로그램 → 다른 앱 선택 → `QuickUnzip` → **항상**
 
 우클릭 메뉴의 **"여기에 바로 풀기"**도 함께 추가됩니다.
