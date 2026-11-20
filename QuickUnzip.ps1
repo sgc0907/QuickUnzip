@@ -5,6 +5,9 @@
 Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem, System.Windows.Forms
 $ErrorActionPreference = 'Stop'
 $tmp = $null
+$log = Join-Path $PSScriptRoot 'log.txt'
+function Write-Log($m) { try { Add-Content -LiteralPath $log -Encoding UTF8 -Value ((Get-Date -Format s) + " ps1: $m") } catch {} }
+Write-Log "start '$ArchivePath' enc=$Encoding"
 try {
     $arc  = (Resolve-Path -LiteralPath $ArchivePath).Path
     $dir  = Split-Path $arc -Parent
@@ -59,11 +62,16 @@ try {
         $open = $target
     }
     $tmp = $null
+    Write-Log "ok -> '$target'"
     if (-not $env:QUICKUNZIP_NOOPEN) {
         if ($open) { Start-Process explorer.exe "`"$open`"" } else { Start-Process explorer.exe "/select,`"$target`"" }
     }
 } catch {
+    Write-Log "error: $($_.Exception.Message) @ line $($_.InvocationInfo.ScriptLineNumber)"
     if ($tmp -and (Test-Path -LiteralPath $tmp)) { Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue }
-    [Windows.Forms.MessageBox]::Show("압축 풀기 실패: $ArchivePath`n`n$($_.Exception.Message)", 'QuickUnzip', 'OK', 'Error') | Out-Null
+    # 숨김 창에서 띄운 메시지가 다른 창 뒤로 숨지 않도록 최상위 창을 소유자로 지정
+    $owner = New-Object Windows.Forms.Form -Property @{ TopMost = $true; ShowInTaskbar = $false }
+    [Windows.Forms.MessageBox]::Show($owner, "압축 풀기 실패: $ArchivePath`n`n$($_.Exception.Message)", 'QuickUnzip', 'OK', 'Error') | Out-Null
+    $owner.Dispose()
     exit 1
 }

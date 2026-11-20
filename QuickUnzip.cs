@@ -15,6 +15,7 @@ static class Program {
             return;
         }
         string dir = AppDomain.CurrentDomain.BaseDirectory;
+        try { File.AppendAllText(Path.Combine(dir, "log.txt"), DateTime.Now.ToString("s") + " exe args: " + string.Join(" | ", args) + Environment.NewLine); } catch { }
         string script = Path.Combine(dir, "QuickUnzip.ps1");
         // 사용법: QuickUnzip.exe [--enc=auto|utf8|cp949|cp932|cp936] 파일...
         string enc = "auto";
